@@ -72,6 +72,10 @@
     button.primary:hover { background: #3e8e41; }
     button.blue { background: #1a3a5c; border-color: #2196F3; }
     button.blue:hover { background: #1e4a6e; }
+    button.active-mute {
+      background: #b71c1c;
+      border-color: #e53935;
+    }
     .checkbox-label {
       display: flex; align-items: center; gap: 8px;
       cursor: pointer; font-size: 14px; color: #b0b0b0; margin: 10px 0;
@@ -147,6 +151,12 @@
     <div class="video-container">
       <video id="localVideo" autoplay muted playsinline></video>
       <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+
+    <!-- Media control buttons (initially hidden, shown after call starts) -->
+    <div id="mediaControls" class="controls hidden">
+      <button id="toggleMicBtn">🎤 Mute Mic</button>
+      <button id="toggleCamBtn">📷 Mute Cam</button>
     </div>
   </div>
 
@@ -231,13 +241,19 @@
     const passwordLine = document.getElementById('passwordLine');
     const passwordDisplay = document.getElementById('passwordDisplay');
 
-    let localPeer = null;      // PeerJS instance
+    // Media control elements
+    const mediaControls = document.getElementById('mediaControls');
+    const toggleMicBtn = document.getElementById('toggleMicBtn');
+    const toggleCamBtn = document.getElementById('toggleCamBtn');
+
+    let localPeer = null;
     let localStream = null;
     let isInitiator = false;
+    let isMicMuted = false;
+    let isCamMuted = false;
 
     // Generate random ID (used as PeerJS ID)
     function generateFullId() {
-      // 144 bits of randomness -> 24 base64url chars
       const bytes = crypto.getRandomValues(new Uint8Array(18));
       return btoa(String.fromCharCode(...bytes))
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -258,6 +274,9 @@
 
       localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localVideo.srcObject = localStream;
+
+      // Show media controls
+      mediaControls.classList.remove('hidden');
 
       // If we are the initiator, we will call when remote connects (handled externally)
       // If we are joiner, we wait for incoming call
@@ -288,99 +307,32 @@
       });
     }
 
-    // ===== 4. URL & password handling =====
-    const hash = location.hash.slice(1);
-    let roomId = '';
-
-    if (hash && hash.length >= 6) {
-      if (hash.length > 6) {
-        // Full ID in URL, no password
-        roomId = hash;
-        isInitiator = false;
-        createBlock.classList.add('hidden');
-        initPeer(roomId).then(() => {
-          statusText.textContent = 'Joined. Waiting for call...';
-        });
-      } else {
-        // Short prefix, need password
-        isInitiator = false;
-        createBlock.classList.add('hidden');
-        joinBlock.classList.remove('hidden');
-      }
-    } else {
-      isInitiator = true;
+    // ----- Mute toggle functions -----
+    function toggleMic() {
+      if (!localStream) return;
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (!audioTrack) return;
+      isMicMuted = !isMicMuted;
+      audioTrack.enabled = !isMicMuted;
+      toggleMicBtn.textContent = isMicMuted ? '🔇 Unmute Mic' : '🎤 Mute Mic';
+      toggleMicBtn.classList.toggle('active-mute', isMicMuted);
     }
 
-    // ===== 5. Button handlers =====
-    createBtn.addEventListener('click', () => {
-      const fullId = generateFullId();
-      const protect = protectCheckbox.checked;
-      if (protect) {
-        const { prefix, secret } = splitId(fullId);
-        location.hash = prefix;
-        passwordDisplay.textContent = secret;
-        passwordLine.classList.remove('hidden');
-        roomId = fullId;
-      } else {
-        location.hash = fullId;
-        passwordLine.classList.add('hidden');
-        roomId = fullId;
-      }
-      createBlock.classList.add('hidden');
-      createdInfo.classList.remove('hidden');
-      joinBlock.classList.add('hidden');
-      // Init as initiator, then wait for someone to connect
-      initPeer(roomId).then(() => {
-        statusText.textContent = 'Waiting for someone to join...';
-        // When a connection is established, PeerJS automatically triggers 'call' event on remote side
-      });
-    });
+    function toggleCam() {
+      if (!localStream) return;
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (!videoTrack) return;
+      isCamMuted = !isCamMuted;
+      videoTrack.enabled = !isCamMuted;
+      toggleCamBtn.textContent = isCamMuted ? '📷 Unmute Cam' : '📷 Mute Cam';
+      toggleCamBtn.classList.toggle('active-mute', isCamMuted);
+    }
 
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(location.href).then(() => {
-        statusText.textContent = '📋 Link copied!';
-        setTimeout(() => {
-          if (statusText.textContent === '📋 Link copied!') {
-            statusText.textContent = 'Waiting for someone to join...';
-          }
-        }, 2000);
-      });
-    });
+    // Attach media button listeners
+    toggleMicBtn.addEventListener('click', toggleMic);
+    toggleCamBtn.addEventListener('click', toggleCam);
 
-    joinBtn.addEventListener('click', () => {
-      const secret = passwordInput.value.trim();
-      if (!secret) return;
-      const prefix = hash;
-      roomId = prefix + secret;
-      joinBlock.classList.add('hidden');
-      initPeer(roomId).then(() => {
-        // After init, we will automatically make a call to the initiator?
-        // But we need the initiator's Peer ID. The initiator has the same roomId.
-        // PeerJS: both peers use the SAME ID to connect? No, PeerJS requires unique ID per peer.
-        // Problem: we need two different IDs. Let's adjust: initiator uses roomId + '_init',
-        // joiner uses roomId + '_join'. Then the joiner calls the initiator.
-        // However, we don't know initiator's ID unless we transmit it. We can use a convention:
-        // initiator's ID = roomId + 'i', joiner's = roomId + 'j'.
-        // But then full roomId must be known to both, which it is. We'll modify initPeer logic.
-        // For simplicity, let's use the same base roomId but append roles.
-        // We'll rebuild the initiator code to accept incoming calls.
-        // Since we already triggered initPeer as initiator, we need to tell the joiner to call the initiator.
-        // We'll store the baseRoomId and compute initiatorId = baseRoomId + '-init'.
-        // The joiner, after joining, will call initiatorId.
-        // Let's refactor: initPeer takes baseId and role. We'll do it inside startCall.
-        // Actually we already started initPeer(roomId) without role. Better to handle inside startCall.
-        // We'll create a function startCall(roomId, role) and set up correct IDs.
-        // However the current flow already called initPeer for full ID without role. Let's unify.
-        // We'll remove the early initPeer calls and always go through a startCall(roomId, role).
-        // Then adjust button handlers to call startCall.
-        // This is a significant change; I'll rewrite the relevant section.
-      });
-      // We'll need to restructure slightly. To keep answer concise, I'll provide the correct code.
-    });
-
-    // ===== 6. Correct PeerJS logic with roles =====
-    // Override previous early initPeer calls. Replace the whole flow:
-
+    // ===== 4. URL & password handling =====
     function startCall(fullId, asInitiator) {
       isInitiator = asInitiator;
       const initiatorId = fullId + '-i';
@@ -399,7 +351,7 @@
       });
     }
 
-    // Re-parse the hash and start accordingly
+    // Parse initial hash
     (function() {
       const hash = location.hash.slice(1);
       if (hash && hash.length >= 6) {
@@ -412,12 +364,10 @@
           createBlock.classList.add('hidden');
           joinBlock.classList.remove('hidden');
         }
-      } else {
-        // Initiator will be created via button
       }
     })();
 
-    // Update button handlers
+    // ===== 5. Button handlers =====
     createBtn.addEventListener('click', () => {
       const fullId = generateFullId();
       const protect = protectCheckbox.checked;
@@ -436,15 +386,6 @@
       startCall(fullId, true);
     });
 
-    joinBtn.addEventListener('click', () => {
-      const secret = passwordInput.value.trim();
-      if (!secret) return;
-      const prefix = hash;
-      const fullId = prefix + secret;
-      joinBlock.classList.add('hidden');
-      startCall(fullId, false);
-    });
-
     copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(location.href).then(() => {
         statusText.textContent = '📋 Link copied!';
@@ -454,6 +395,15 @@
           }
         }, 2000);
       });
+    });
+
+    joinBtn.addEventListener('click', () => {
+      const secret = passwordInput.value.trim();
+      if (!secret) return;
+      const prefix = hash;
+      const fullId = prefix + secret;
+      joinBlock.classList.add('hidden');
+      startCall(fullId, false);
     });
   </script>
 </body>
