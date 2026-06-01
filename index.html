@@ -112,9 +112,25 @@
       padding: 2px 8px; font-size: 12px; margin-left: 6px; color: #ffb74d;
     }
     @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar { width: 100%; height: auto; border-left: none; border-top: 1px solid #242424; }
-      .main-panel { height: auto; }
+      body {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border-top: 1px solid #242424;
+      }
+      .main-panel {
+        height: auto;
+        padding: 20px 10px;
+      }
+      video {
+        width: 90%;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -150,7 +166,8 @@
 
     <div class="video-container">
       <video id="localVideo" autoplay muted playsinline></video>
-      <video id="remoteVideo" autoplay playsinline></video>
+      <!-- Удалённому видео добавлен muted для автозапуска на мобильных -->
+      <video id="remoteVideo" autoplay playsinline muted></video>
     </div>
 
     <!-- Media control buttons (initially hidden, shown after call starts) -->
@@ -248,7 +265,6 @@
 
     let localPeer = null;
     let localStream = null;
-    let isInitiator = false;
     let isMicMuted = false;
     let isCamMuted = false;
 
@@ -261,6 +277,14 @@
 
     function splitId(fullId) {
       return { prefix: fullId.slice(0, 6), secret: fullId.slice(6) };
+    }
+
+    // Helper: activate remote video (unmute and play)
+    function playRemoteStream(stream) {
+      remoteVideo.srcObject = stream;
+      // Снимаем mute после прикрепления потока, чтобы включить звук
+      remoteVideo.muted = false;
+      remoteVideo.play().catch(e => console.warn('play() failed, but video may still render:', e));
     }
 
     // Initialize PeerJS and media
@@ -278,14 +302,12 @@
       // Show media controls
       mediaControls.classList.remove('hidden');
 
-      // If we are the initiator, we will call when remote connects (handled externally)
-      // If we are joiner, we wait for incoming call
-
+      // If we are the initiator, we will wait for incoming call
       localPeer.on('call', async (call) => {
         statusText.textContent = 'Incoming call, answering...';
         call.answer(localStream);
         call.on('stream', (remoteStream) => {
-          remoteVideo.srcObject = remoteStream;
+          playRemoteStream(remoteStream);
           statusText.textContent = '✅ Call active';
         });
       });
@@ -299,7 +321,7 @@
       statusText.textContent = 'Calling peer...';
       const call = localPeer.call(remoteId, localStream);
       call.on('stream', (remoteStream) => {
-        remoteVideo.srcObject = remoteStream;
+        playRemoteStream(remoteStream);
         statusText.textContent = '✅ Call active';
       });
       call.on('error', (err) => {
@@ -332,9 +354,8 @@
     toggleMicBtn.addEventListener('click', toggleMic);
     toggleCamBtn.addEventListener('click', toggleCam);
 
-    // ===== 4. URL & password handling =====
+    // ===== 4. Start call with roles =====
     function startCall(fullId, asInitiator) {
-      isInitiator = asInitiator;
       const initiatorId = fullId + '-i';
       const joinerId = fullId + '-j';
       const myId = asInitiator ? initiatorId : joinerId;
@@ -346,7 +367,6 @@
           makeCall(remoteId);
         } else {
           statusText.textContent = 'Waiting for someone to join...';
-          // Initiator waits for incoming call (handled by 'call' event)
         }
       });
     }
@@ -400,7 +420,7 @@
     joinBtn.addEventListener('click', () => {
       const secret = passwordInput.value.trim();
       if (!secret) return;
-      const prefix = hash;
+      const prefix = location.hash.slice(1);
       const fullId = prefix + secret;
       joinBlock.classList.add('hidden');
       startCall(fullId, false);
