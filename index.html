@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serverless Video Call</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #0c0c0c;
+      color: #e0e0e0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+    }
+
+    .status-badge {
+      background: #1e1e1e;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 14px;
+      color: #a0a0a0;
+      margin-bottom: 24px;
+      border: 1px solid #2a2a2a;
+      transition: all 0.3s ease;
+    }
+
+    .video-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    video {
+      width: 300px;
+      max-width: 45%;
+      background: #1a1a1a;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      border: 1px solid #333;
+      transition: transform 0.2s ease;
+    }
+    video:hover {
+      transform: scale(1.02);
+    }
+
+    .controls {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    button {
+      background: #2a2a2a;
+      border: none;
+      color: #e0e0e0;
+      padding: 12px 28px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid #3a3a3a;
+    }
+    button:hover {
+      background: #3a3a3a;
+      border-color: #555;
+    }
+    button.primary {
+      background: #2e7d32;
+      border-color: #4caf50;
+    }
+    button.primary:hover {
+      background: #3e8e41;
+    }
+    button.blue {
+      background: #1a3a5c;
+      border-color: #2196F3;
+    }
+    button.blue:hover {
+      background: #1e4a6e;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #b0b0b0;
+      margin: 10px 0;
+    }
+    .checkbox-label input {
+      accent-color: #4caf50;
+      width: 18px;
+      height: 18px;
+    }
+
+    input[type="text"] {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      width: 240px;
+      text-align: center;
+      outline: none;
+      transition: border 0.3s;
+    }
+    input[type="text"]:focus {
+      border-color: #4caf50;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: #121212;
+      border-left: 1px solid #242424;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      box-shadow: -8px 0 24px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+
+    .info-card {
+      background: #1e1e1e;
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid #2a2a2a;
+      transition: background 0.2s;
+    }
+    .info-card:hover { background: #242424; }
+    .info-card h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #888;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .info-card .value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      word-break: break-all;
+      color: #b0b0b0;
+    }
+    .candidate-ip { color: #81c784; }
+    .candidate-type {
+      display: inline-block;
+      background: #2a2a2a;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 12px;
+      margin-left: 6px;
+      color: #ffb74d;
+    }
+
+    hr { border-color: #2a2a2a; margin: 4px 0; }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; border-left: none; border-top: 1px solid #242424; }
+      .main-panel { height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-panel">
+    <div class="status-badge" id="statusText">Create a room or open a friend's link</div>
+
+    <!-- Initial create block -->
+    <div id="createBlock">
+      <button class="primary" id="createBtn">🔮 Create Call</button>
+      <label class="checkbox-label">
+        <input type="checkbox" id="protectCheckbox">
+        Protect with password
+      </label>
+    </div>
+
+    <!-- After creation: show link and optional password -->
+    <div id="createdInfo" class="hidden">
+      <div class="status-badge">✅ Room created</div>
+      <div id="passwordLine" class="hidden" style="margin: 8px 0;">
+        <span style="color:#aaa;">Password:</span>
+        <span id="passwordDisplay" style="font-family: monospace; background:#1e1e1e; padding:4px 12px; border-radius:8px; margin-left:6px;"></span>
+      </div>
+      <div class="controls">
+        <button class="blue" id="copyBtn">📋 Copy Link</button>
+      </div>
+      <p style="color:#777; font-size:13px; margin-top:12px;">Send the link to your friend. If password is set, share it separately.</p>
+    </div>
+
+    <!-- Join block: password entry -->
+    <div id="joinBlock" class="hidden">
+      <div class="status-badge">🔐 This room is password protected</div>
+      <input type="text" id="passwordInput" placeholder="Enter password" autofocus>
+      <button class="blue" id="joinBtn" style="margin-top:12px;">🔓 Join</button>
+    </div>
+
+    <!-- Video area -->
+    <div class="video-container">
+      <video id="localVideo" autoplay muted playsinline></video>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+  </div>
+
+  <!-- Info sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="info-card">
+      <h3>🖥️ My local IP</h3>
+      <div class="value" id="localIp">...</div>
+    </div>
+    <div class="info-card">
+      <h3>🌐 Remote candidates</h3>
+      <div id="remoteCandidates" class="value">Waiting...</div>
+    </div>
+    <div class="info-card">
+      <h3>🧊 ICE connection state</h3>
+      <div class="value" id="iceState">—</div>
+    </div>
+    <div class="info-card">
+      <h3>🔗 Peer connection state</h3>
+      <div class="value" id="connState">—</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import Bugout from 'https://cdn.jsdelivr.net/npm/bugout@0.6.0/dist/bugout.min.js';
+
+    // DOM elements
+    const statusText = document.getElementById('statusText');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const createBtn = document.getElementById('createBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const passwordInput = document.getElementById('passwordInput');
+    const protectCheckbox = document.getElementById('protectCheckbox');
+    const createBlock = document.getElementById('createBlock');
+    const createdInfo = document.getElementById('createdInfo');
+    const joinBlock = document.getElementById('joinBlock');
+    const passwordLine = document.getElementById('passwordLine');
+    const passwordDisplay = document.getElementById('passwordDisplay');
+    const localIpSpan = document.getElementById('localIp');
+    const remoteCandidatesDiv = document.getElementById('remoteCandidates');
+    const iceStateSpan = document.getElementById('iceState');
+    const connStateSpan = document.getElementById('connState');
+
+    let bugoutRoom = null;
+    let peerConnection = null;
+    let isInitiator = false;
+
+    // --- Utilities ---
+    function generateFullId() {
+      const bytes = crypto.getRandomValues(new Uint8Array(18));
+      return btoa(String.fromCharCode(...bytes))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function splitId(fullId) {
+      return {
+        prefix: fullId.slice(0, 6),
+        secret: fullId.slice(6)
+      };
+    }
+
+    // Show local IP using a temporary RTCPeerConnection
+    async function showLocalIP() {
+      const pc = new RTCPeerConnection({ iceServers: [] });
+      pc.createDataChannel('dummy');
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          const ip = e.candidate.address || e.candidate.candidate?.split(' ')[4];
+          if (ip) localIpSpan.textContent = ip;
+        }
+      };
+      setTimeout(() => pc.close(), 2000);
+    }
+    showLocalIP();
+
+    // --- WebRTC + Bugout ---
+    function sendSignal(data) {
+      if (bugoutRoom) bugoutRoom.send(JSON.stringify(data));
+    }
+
+    function displayRemoteCandidate(candidate) {
+      const ip = candidate.address || candidate.candidate?.split(' ')[4] || '?';
+      const type = candidate.type || candidate.candidate?.split(' ')[7] || '?';
+      const entry = document.createElement('div');
+      entry.style.marginBottom = '6px';
+      entry.innerHTML = `<span class="candidate-ip">${ip}</span><span class="candidate-type">${type}</span>`;
+      remoteCandidatesDiv.appendChild(entry);
+    }
+
+    function createPeerConnection() {
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          sendSignal({ ice: e.candidate });
+          displayRemoteCandidate(e.candidate);
+        }
+      };
+
+      pc.ontrack = (e) => {
+        if (e.streams[0]) {
+          remoteVideo.srcObject = e.streams[0];
+          statusText.textContent = '✅ Call active';
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        iceStateSpan.textContent = pc.iceConnectionState;
+        if (pc.iceConnectionState === 'failed') {
+          statusText.textContent = '❌ Connection failed. Possibly symmetric NAT.';
+        }
+      };
+      pc.onconnectionstatechange = () => {
+        connStateSpan.textContent = pc.connectionState;
+      };
+
+      return pc;
+    }
+
+    async function handleSignalMessage(msg) {
+      if (!peerConnection) {
+        if (msg.sdp && msg.sdp.type === 'offer') {
+          peerConnection = createPeerConnection();
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          localVideo.srcObject = stream;
+          stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+        } else {
+          return;
+        }
+      }
+
+      if (msg.sdp) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        if (msg.sdp.type === 'offer') {
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          sendSignal({ sdp: peerConnection.localDescription });
+        }
+      } else if (msg.ice) {
+        try {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(msg.ice));
+        } catch (e) {}
+      }
+    }
+
+    async function startCall(roomId) {
+      statusText.textContent = 'Connecting to room...';
+      bugoutRoom = new Bugout(roomId, { announce: ['wss://tracker.openwebtorrent.com'] });
+
+      bugoutRoom.on('message', (address, data) => {
+        try {
+          const msg = JSON.parse(data);
+          handleSignalMessage(msg);
+        } catch (e) {}
+      });
+
+      bugoutRoom.on('connections', () => {
+        if (isInitiator && !peerConnection) {
+          initiateCall();
+        }
+      });
+
+      if (isInitiator) {
+        statusText.textContent = 'Waiting for someone to join...';
+      } else {
+        statusText.textContent = 'Joined. Waiting for offer...';
+      }
+    }
+
+    async function initiateCall() {
+      peerConnection = createPeerConnection();
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideo.srcObject = stream;
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      sendSignal({ sdp: peerConnection.localDescription });
+    }
+
+    // --- URL hash & password handling ---
+    const hash = location.hash.slice(1);
+    let roomId = '';
+
+    if (hash && hash.length >= 6) {
+      if (hash.length > 6) {
+        // Full ID, no password
+        roomId = hash;
+        isInitiator = false;
+        createBlock.classList.add('hidden');
+        startCall(roomId);
+      } else {
+        // Short prefix, need password
+        isInitiator = false;
+        createBlock.classList.add('hidden');
+        joinBlock.classList.remove('hidden');
+      }
+    } else {
+      isInitiator = true;
+    }
+
+    // --- Button events ---
+    createBtn.addEventListener('click', () => {
+      const fullId = generateFullId();
+      const protect = protectCheckbox.checked;
+      if (protect) {
+        const { prefix, secret } = splitId(fullId);
+        location.hash = prefix;
+        passwordDisplay.textContent = secret;
+        passwordLine.classList.remove('hidden');
+        roomId = fullId;
+      } else {
+        location.hash = fullId;
+        passwordLine.classList.add('hidden');
+        roomId = fullId;
+      }
+      createBlock.classList.add('hidden');
+      createdInfo.classList.remove('hidden');
+      joinBlock.classList.add('hidden');
+      startCall(roomId);
+    });
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(location.href).then(() => {
+        statusText.textContent = '📋 Link copied!';
+        setTimeout(() => {
+          if (statusText.textContent === '📋 Link copied!') {
+            statusText.textContent = 'Waiting for someone to join...';
+          }
+        }, 2000);
+      });
+    });
+
+    joinBtn.addEventListener('click', () => {
+      const secret = passwordInput.value.trim();
+      if (!secret) return;
+      const prefix = hash;
+      roomId = prefix + secret;
+      joinBlock.classList.add('hidden');
+      startCall(roomId);
+    });
+  </script>
+</body>
+</html>
