@@ -14,7 +14,6 @@
       height: 100vh;
       overflow: hidden;
     }
-
     .main-panel {
       flex: 1;
       display: flex;
@@ -24,7 +23,6 @@
       padding: 30px;
       position: relative;
     }
-
     .status-badge {
       background: #1e1e1e;
       padding: 10px 20px;
@@ -35,7 +33,6 @@
       border: 1px solid #2a2a2a;
       transition: all 0.3s ease;
     }
-
     .video-container {
       display: flex;
       flex-wrap: wrap;
@@ -44,7 +41,6 @@
       width: 100%;
       max-width: 900px;
     }
-
     video {
       width: 300px;
       max-width: 45%;
@@ -54,18 +50,8 @@
       border: 1px solid #333;
       transition: transform 0.2s ease;
     }
-    video:hover {
-      transform: scale(1.02);
-    }
-
-    .controls {
-      margin-top: 24px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-    }
-
+    video:hover { transform: scale(1.02); }
+    .controls { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
     button {
       background: #2a2a2a;
       border: none;
@@ -79,112 +65,49 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      backdrop-filter: blur(10px);
       border: 1px solid #3a3a3a;
     }
-    button:hover {
-      background: #3a3a3a;
-      border-color: #555;
-    }
-    button.primary {
-      background: #2e7d32;
-      border-color: #4caf50;
-    }
-    button.primary:hover {
-      background: #3e8e41;
-    }
-    button.blue {
-      background: #1a3a5c;
-      border-color: #2196F3;
-    }
-    button.blue:hover {
-      background: #1e4a6e;
-    }
-
+    button:hover { background: #3a3a3a; border-color: #555; }
+    button.primary { background: #2e7d32; border-color: #4caf50; }
+    button.primary:hover { background: #3e8e41; }
+    button.blue { background: #1a3a5c; border-color: #2196F3; }
+    button.blue:hover { background: #1e4a6e; }
     .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      color: #b0b0b0;
-      margin: 10px 0;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-size: 14px; color: #b0b0b0; margin: 10px 0;
     }
-    .checkbox-label input {
-      accent-color: #4caf50;
-      width: 18px;
-      height: 18px;
-    }
-
+    .checkbox-label input { accent-color: #4caf50; width: 18px; height: 18px; }
     input[type="text"] {
-      background: #1e1e1e;
-      border: 1px solid #333;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 15px;
-      width: 240px;
-      text-align: center;
-      outline: none;
-      transition: border 0.3s;
+      background: #1e1e1e; border: 1px solid #333; color: white;
+      padding: 12px 16px; border-radius: 12px; font-size: 15px;
+      width: 240px; text-align: center; outline: none; transition: border 0.3s;
     }
-    input[type="text"]:focus {
-      border-color: #4caf50;
-    }
-
+    input[type="text"]:focus { border-color: #4caf50; }
     .hidden { display: none !important; }
-
-    /* Sidebar */
     .sidebar {
-      width: 320px;
-      background: #121212;
-      border-left: 1px solid #242424;
-      padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      overflow-y: auto;
-      box-shadow: -8px 0 24px rgba(0,0,0,0.4);
-      z-index: 10;
+      width: 320px; background: #121212; border-left: 1px solid #242424;
+      padding: 24px 20px; display: flex; flex-direction: column; gap: 20px;
+      overflow-y: auto; box-shadow: -8px 0 24px rgba(0,0,0,0.4); z-index: 10;
     }
-
     .info-card {
-      background: #1e1e1e;
-      border-radius: 16px;
-      padding: 16px;
-      border: 1px solid #2a2a2a;
-      transition: background 0.2s;
+      background: #1e1e1e; border-radius: 16px; padding: 16px;
+      border: 1px solid #2a2a2a; transition: background 0.2s;
     }
     .info-card:hover { background: #242424; }
     .info-card h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #888;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px;
+      color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
     }
     .info-card .value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      word-break: break-all;
-      color: #b0b0b0;
+      font-family: 'JetBrains Mono', monospace; font-size: 14px;
+      word-break: break-all; color: #b0b0b0;
     }
     .candidate-ip { color: #81c784; }
     .candidate-type {
-      display: inline-block;
-      background: #2a2a2a;
-      border-radius: 6px;
-      padding: 2px 8px;
-      font-size: 12px;
-      margin-left: 6px;
-      color: #ffb74d;
+      display: inline-block; background: #2a2a2a; border-radius: 6px;
+      padding: 2px 8px; font-size: 12px; margin-left: 6px; color: #ffb74d;
     }
-
     hr { border-color: #2a2a2a; margin: 4px 0; }
-
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .sidebar { width: 100%; height: auto; border-left: none; border-top: 1px solid #242424; }
@@ -196,7 +119,6 @@
   <div class="main-panel">
     <div class="status-badge" id="statusText">Create a room or open a friend's link</div>
 
-    <!-- Initial create block -->
     <div id="createBlock">
       <button class="primary" id="createBtn">🔮 Create Call</button>
       <label class="checkbox-label">
@@ -205,7 +127,6 @@
       </label>
     </div>
 
-    <!-- After creation: show link and optional password -->
     <div id="createdInfo" class="hidden">
       <div class="status-badge">✅ Room created</div>
       <div id="passwordLine" class="hidden" style="margin: 8px 0;">
@@ -218,21 +139,18 @@
       <p style="color:#777; font-size:13px; margin-top:12px;">Send the link to your friend. If password is set, share it separately.</p>
     </div>
 
-    <!-- Join block: password entry -->
     <div id="joinBlock" class="hidden">
       <div class="status-badge">🔐 This room is password protected</div>
       <input type="text" id="passwordInput" placeholder="Enter password" autofocus>
       <button class="blue" id="joinBtn" style="margin-top:12px;">🔓 Join</button>
     </div>
 
-    <!-- Video area -->
     <div class="video-container">
       <video id="localVideo" autoplay muted playsinline></video>
       <video id="remoteVideo" autoplay playsinline></video>
     </div>
   </div>
 
-  <!-- Info sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="info-card">
       <h3>🖥️ My local IP</h3>
@@ -253,9 +171,65 @@
   </div>
 
   <script type="module">
-    import Bugout from 'https://esm.sh/bugout@0.6.0';
+    // ===== 1. Перехват RTCPeerConnection для сбора информации =====
+    const remoteCandidatesDiv = document.getElementById('remoteCandidates');
+    const iceStateSpan = document.getElementById('iceState');
+    const connStateSpan = document.getElementById('connState');
 
-    // DOM elements
+    // Сохраняем оригинальный конструктор
+    const OriginalRTCPeerConnection = window.RTCPeerConnection;
+
+    // Список созданных соединений (для очистки)
+    const trackedConnections = new Set();
+
+    // Подменяем глобальный RTCPeerConnection
+    window.RTCPeerConnection = function(config) {
+      const pc = new OriginalRTCPeerConnection(config);
+
+      pc.addEventListener('icecandidate', (e) => {
+        if (e.candidate) {
+          const ip = e.candidate.address || e.candidate.candidate?.split(' ')[4] || '?';
+          const type = e.candidate.type || e.candidate.candidate?.split(' ')[7] || '?';
+          const entry = document.createElement('div');
+          entry.style.marginBottom = '6px';
+          entry.innerHTML = `<span class="candidate-ip">${ip}</span><span class="candidate-type">${type}</span>`;
+          remoteCandidatesDiv.appendChild(entry);
+        }
+      });
+
+      pc.addEventListener('iceconnectionstatechange', () => {
+        iceStateSpan.textContent = pc.iceConnectionState;
+      });
+
+      pc.addEventListener('connectionstatechange', () => {
+        connStateSpan.textContent = pc.connectionState;
+      });
+
+      trackedConnections.add(pc);
+      return pc;
+    };
+    // Копируем статические свойства прототипа
+    window.RTCPeerConnection.prototype = OriginalRTCPeerConnection.prototype;
+
+    // ===== 2. Показ своего локального IP =====
+    async function showLocalIP() {
+      const pc = new OriginalRTCPeerConnection({ iceServers: [] });
+      pc.createDataChannel('dummy');
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          const ip = e.candidate.address || e.candidate.candidate?.split(' ')[4];
+          if (ip) document.getElementById('localIp').textContent = ip;
+        }
+      };
+      setTimeout(() => pc.close(), 2000);
+    }
+    showLocalIP();
+
+    // ===== 3. Основная логика (Trystero) =====
+    import { joinRoom } from 'https://cdn.jsdelivr.net/npm/trystero@0.20.0/dist/trystero.min.js';
+
     const statusText = document.getElementById('statusText');
     const localVideo = document.getElementById('localVideo');
     const remoteVideo = document.getElementById('remoteVideo');
@@ -269,16 +243,11 @@
     const joinBlock = document.getElementById('joinBlock');
     const passwordLine = document.getElementById('passwordLine');
     const passwordDisplay = document.getElementById('passwordDisplay');
-    const localIpSpan = document.getElementById('localIp');
-    const remoteCandidatesDiv = document.getElementById('remoteCandidates');
-    const iceStateSpan = document.getElementById('iceState');
-    const connStateSpan = document.getElementById('connState');
 
-    let bugoutRoom = null;
-    let peerConnection = null;
+    let room = null;
     let isInitiator = false;
 
-    // --- Utilities ---
+    // Генерация ID
     function generateFullId() {
       const bytes = crypto.getRandomValues(new Uint8Array(18));
       return btoa(String.fromCharCode(...bytes))
@@ -292,110 +261,23 @@
       };
     }
 
-    // Show local IP using a temporary RTCPeerConnection
-    async function showLocalIP() {
-      const pc = new RTCPeerConnection({ iceServers: [] });
-      pc.createDataChannel('dummy');
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      pc.onicecandidate = (e) => {
-        if (e.candidate) {
-          const ip = e.candidate.address || e.candidate.candidate?.split(' ')[4];
-          if (ip) localIpSpan.textContent = ip;
-        }
-      };
-      setTimeout(() => pc.close(), 2000);
-    }
-    showLocalIP();
-
-    // --- WebRTC + Bugout ---
-    function sendSignal(data) {
-      if (bugoutRoom) bugoutRoom.send(JSON.stringify(data));
-    }
-
-    function displayRemoteCandidate(candidate) {
-      const ip = candidate.address || candidate.candidate?.split(' ')[4] || '?';
-      const type = candidate.type || candidate.candidate?.split(' ')[7] || '?';
-      const entry = document.createElement('div');
-      entry.style.marginBottom = '6px';
-      entry.innerHTML = `<span class="candidate-ip">${ip}</span><span class="candidate-type">${type}</span>`;
-      remoteCandidatesDiv.appendChild(entry);
-    }
-
-    function createPeerConnection() {
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-
-      pc.onicecandidate = (e) => {
-        if (e.candidate) {
-          sendSignal({ ice: e.candidate });
-          displayRemoteCandidate(e.candidate);
-        }
-      };
-
-      pc.ontrack = (e) => {
-        if (e.streams[0]) {
-          remoteVideo.srcObject = e.streams[0];
-          statusText.textContent = '✅ Call active';
-        }
-      };
-
-      pc.oniceconnectionstatechange = () => {
-        iceStateSpan.textContent = pc.iceConnectionState;
-        if (pc.iceConnectionState === 'failed') {
-          statusText.textContent = '❌ Connection failed. Possibly symmetric NAT.';
-        }
-      };
-      pc.onconnectionstatechange = () => {
-        connStateSpan.textContent = pc.connectionState;
-      };
-
-      return pc;
-    }
-
-    async function handleSignalMessage(msg) {
-      if (!peerConnection) {
-        if (msg.sdp && msg.sdp.type === 'offer') {
-          peerConnection = createPeerConnection();
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          localVideo.srcObject = stream;
-          stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-        } else {
-          return;
-        }
-      }
-
-      if (msg.sdp) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-        if (msg.sdp.type === 'offer') {
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
-          sendSignal({ sdp: peerConnection.localDescription });
-        }
-      } else if (msg.ice) {
-        try {
-          await peerConnection.addIceCandidate(new RTCIceCandidate(msg.ice));
-        } catch (e) {}
-      }
-    }
-
     async function startCall(roomId) {
       statusText.textContent = 'Connecting to room...';
-      bugoutRoom = new Bugout(roomId, { announce: ['wss://tracker.openwebtorrent.com'] });
+      room = joinRoom({ appId: 'serverless-call-v2' }, roomId);
 
-      bugoutRoom.on('message', (address, data) => {
-        try {
-          const msg = JSON.parse(data);
-          handleSignalMessage(msg);
-        } catch (e) {}
+      room.onPeerJoin((peerId) => {
+        statusText.textContent = 'Peer joined, setting up call...';
       });
 
-      bugoutRoom.on('connections', () => {
-        if (isInitiator && !peerConnection) {
-          initiateCall();
-        }
+      room.onPeerStream((peerStream, peerId) => {
+        remoteVideo.srcObject = peerStream;
+        statusText.textContent = '✅ Call active';
       });
+
+      // Захват локального видео
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideo.srcObject = stream;
+      room.addStream(stream);
 
       if (isInitiator) {
         statusText.textContent = 'Waiting for someone to join...';
@@ -404,30 +286,17 @@
       }
     }
 
-    async function initiateCall() {
-      peerConnection = createPeerConnection();
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      localVideo.srcObject = stream;
-      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      sendSignal({ sdp: peerConnection.localDescription });
-    }
-
-    // --- URL hash & password handling ---
+    // ===== Обработка URL и пароля =====
     const hash = location.hash.slice(1);
     let roomId = '';
 
     if (hash && hash.length >= 6) {
       if (hash.length > 6) {
-        // Full ID, no password
         roomId = hash;
         isInitiator = false;
         createBlock.classList.add('hidden');
         startCall(roomId);
       } else {
-        // Short prefix, need password
         isInitiator = false;
         createBlock.classList.add('hidden');
         joinBlock.classList.remove('hidden');
@@ -436,7 +305,7 @@
       isInitiator = true;
     }
 
-    // --- Button events ---
+    // Кнопки
     createBtn.addEventListener('click', () => {
       const fullId = generateFullId();
       const protect = protectCheckbox.checked;
