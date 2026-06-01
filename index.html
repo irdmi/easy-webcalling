@@ -170,22 +170,18 @@
     </div>
   </div>
 
-  <script type="module">
-    // ===== 1. Перехват RTCPeerConnection для сбора информации =====
+  <!-- Trystero UMD build from unpkg (no bundler needed) -->
+  <script src="https://unpkg.com/trystero@0.19.0/dist/trystero.min.js"></script>
+  <script>
+    // ===== 1. Hijack RTCPeerConnection to collect connection info =====
     const remoteCandidatesDiv = document.getElementById('remoteCandidates');
     const iceStateSpan = document.getElementById('iceState');
     const connStateSpan = document.getElementById('connState');
-
-    // Сохраняем оригинальный конструктор
     const OriginalRTCPeerConnection = window.RTCPeerConnection;
-
-    // Список созданных соединений (для очистки)
     const trackedConnections = new Set();
 
-    // Подменяем глобальный RTCPeerConnection
     window.RTCPeerConnection = function(config) {
       const pc = new OriginalRTCPeerConnection(config);
-
       pc.addEventListener('icecandidate', (e) => {
         if (e.candidate) {
           const ip = e.candidate.address || e.candidate.candidate?.split(' ')[4] || '?';
@@ -196,22 +192,18 @@
           remoteCandidatesDiv.appendChild(entry);
         }
       });
-
       pc.addEventListener('iceconnectionstatechange', () => {
         iceStateSpan.textContent = pc.iceConnectionState;
       });
-
       pc.addEventListener('connectionstatechange', () => {
         connStateSpan.textContent = pc.connectionState;
       });
-
       trackedConnections.add(pc);
       return pc;
     };
-    // Копируем статические свойства прототипа
     window.RTCPeerConnection.prototype = OriginalRTCPeerConnection.prototype;
 
-    // ===== 2. Показ своего локального IP =====
+    // ===== 2. Show local IP using a temporary RTCPeerConnection =====
     async function showLocalIP() {
       const pc = new OriginalRTCPeerConnection({ iceServers: [] });
       pc.createDataChannel('dummy');
@@ -227,8 +219,8 @@
     }
     showLocalIP();
 
-    // ===== 3. Основная логика (Trystero) =====
-    import { joinRoom } from 'https://cdn.skypack.dev/trystero@0.19.0';
+    // ===== 3. Core application using Trystero global =====
+    const { joinRoom } = trystero;
 
     const statusText = document.getElementById('statusText');
     const localVideo = document.getElementById('localVideo');
@@ -247,7 +239,6 @@
     let room = null;
     let isInitiator = false;
 
-    // Генерация ID
     function generateFullId() {
       const bytes = crypto.getRandomValues(new Uint8Array(18));
       return btoa(String.fromCharCode(...bytes))
@@ -255,10 +246,7 @@
     }
 
     function splitId(fullId) {
-      return {
-        prefix: fullId.slice(0, 6),
-        secret: fullId.slice(6)
-      };
+      return { prefix: fullId.slice(0, 6), secret: fullId.slice(6) };
     }
 
     async function startCall(roomId) {
@@ -274,7 +262,6 @@
         statusText.textContent = '✅ Call active';
       });
 
-      // Захват локального видео
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localVideo.srcObject = stream;
       room.addStream(stream);
@@ -286,7 +273,6 @@
       }
     }
 
-    // ===== Обработка URL и пароля =====
     const hash = location.hash.slice(1);
     let roomId = '';
 
@@ -305,7 +291,6 @@
       isInitiator = true;
     }
 
-    // Кнопки
     createBtn.addEventListener('click', () => {
       const fullId = generateFullId();
       const protect = protectCheckbox.checked;
